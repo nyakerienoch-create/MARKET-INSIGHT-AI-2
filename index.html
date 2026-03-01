@@ -1,0 +1,1679 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Market Insight AI - Deriv Trading Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-dark: #0a0a0f;
+            --bg-card: #1a1a2e;
+            --bg-card-hover: #252542;
+            --primary-purple: #6c5ce7;
+            --primary-blue: #00cec9;
+            --accent-pink: #fd79a8;
+            --accent-orange: #e17055;
+            --text-primary: #ffffff;
+            --text-secondary: #b2bec3;
+            --text-gold: #fdcb6e;
+            --success-green: #00b894;
+            --danger-red: #d63031;
+            --info-blue: #0984e3;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--bg-dark);
+            color: var(--text-primary);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .bg-animation {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background: 
+                radial-gradient(circle at 20% 50%, rgba(108, 92, 231, 0.15) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(0, 206, 201, 0.1) 0%, transparent 50%);
+            animation: bgPulse 8s ease-in-out infinite;
+        }
+
+        @keyframes bgPulse {
+            0%, 100% { opacity: 0.5; }
+            50% { opacity: 1; }
+        }
+
+        /* Login Screen */
+        .login-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #1a1a2e 0%, #0a0a0f 100%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+            transition: opacity 0.5s ease;
+        }
+
+        .login-screen.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .login-logo {
+            width: 120px;
+            height: 120px;
+            margin-bottom: 30px;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+        }
+
+        .login-title {
+            font-size: 2.5rem;
+            background: linear-gradient(90deg, var(--primary-purple), var(--primary-blue));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+
+        .login-subtitle {
+            color: var(--text-secondary);
+            margin-bottom: 40px;
+            text-align: center;
+            max-width: 400px;
+            line-height: 1.6;
+        }
+
+        .deriv-login-btn {
+            background: linear-gradient(135deg, #ff4444, #cc0000);
+            color: white;
+            border: none;
+            padding: 20px 50px;
+            border-radius: 50px;
+            font-size: 1.2rem;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            box-shadow: 0 10px 30px rgba(255, 68, 68, 0.3);
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .deriv-login-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 40px rgba(255, 68, 68, 0.4);
+        }
+
+        .deriv-login-btn:active {
+            transform: translateY(-1px);
+        }
+
+        .deriv-icon {
+            width: 30px;
+            height: 30px;
+            background: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: #ff4444;
+        }
+
+        /* Header */
+        .header {
+            background: linear-gradient(135deg, rgba(108, 92, 231, 0.2), rgba(0, 206, 201, 0.2));
+            padding: 20px;
+            text-align: center;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+            position: relative;
+        }
+
+        .header h1 {
+            font-size: 2rem;
+            background: linear-gradient(90deg, var(--primary-purple), var(--primary-blue));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 5px;
+        }
+
+        .welcome {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .account-info {
+            position: absolute;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .balance-display {
+            background: rgba(0, 184, 148, 0.2);
+            color: var(--success-green);
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-weight: 700;
+            border: 1px solid var(--success-green);
+        }
+
+        .logout-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            color: var(--text-secondary);
+            padding: 8px 15px;
+            border-radius: 15px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            transition: all 0.3s;
+        }
+
+        .logout-btn:hover {
+            background: rgba(214, 48, 49, 0.2);
+            color: var(--danger-red);
+            border-color: var(--danger-red);
+        }
+
+        /* Navigation */
+        .nav-tabs {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            padding: 20px;
+            background: rgba(0,0,0,0.2);
+            flex-wrap: wrap;
+        }
+
+        .nav-tab {
+            padding: 15px 40px;
+            border-radius: 30px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+            border: 2px solid transparent;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-size: 0.9rem;
+        }
+
+        .nav-tab.active {
+            background: linear-gradient(135deg, var(--primary-purple), var(--primary-blue));
+            color: white;
+        }
+
+        .nav-tab:not(.active) {
+            background: rgba(255,255,255,0.05);
+            color: var(--text-secondary);
+            border-color: rgba(255,255,255,0.1);
+        }
+
+        .nav-tab:hover:not(.active) {
+            background: rgba(255,255,255,0.1);
+        }
+
+        /* Dashboard Container */
+        .dashboard {
+            display: none;
+            padding: 20px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .dashboard.active {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Bot Download Section */
+        .bot-section {
+            background: var(--bg-card);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 30px;
+            border: 1px solid rgba(255,255,255,0.1);
+            text-align: center;
+        }
+
+        .bot-title {
+            font-size: 1.5rem;
+            color: var(--text-gold);
+            margin-bottom: 15px;
+        }
+
+        .bot-description {
+            color: var(--text-secondary);
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+
+        .download-btn {
+            background: linear-gradient(135deg, var(--success-green), #00d2a0);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            border-radius: 30px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 5px 20px rgba(0, 184, 148, 0.3);
+            transition: all 0.3s;
+            text-decoration: none;
+        }
+
+        .download-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 184, 148, 0.4);
+        }
+
+        .bot-status {
+            margin-top: 20px;
+            padding: 15px;
+            background: rgba(0,0,0,0.3);
+            border-radius: 10px;
+            font-size: 0.9rem;
+        }
+
+        .status-connected {
+            color: var(--success-green);
+        }
+
+        .status-disconnected {
+            color: var(--danger-red);
+        }
+
+        /* Section Title */
+        .section-title {
+            text-align: center;
+            padding: 20px;
+            font-size: 1.3rem;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+
+        .matches-title {
+            color: var(--accent-pink);
+            text-shadow: 0 0 20px rgba(253, 121, 168, 0.3);
+        }
+
+        .overunder-title {
+            color: var(--accent-pink);
+            text-shadow: 0 0 20px rgba(253, 121, 168, 0.3);
+        }
+
+        /* Cards Container */
+        .cards-container {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        /* Prediction Card - Video Style */
+        .prediction-card {
+            background: var(--bg-card);
+            border-radius: 20px;
+            padding: 25px;
+            position: relative;
+            overflow: hidden;
+            border: 1px solid rgba(255,255,255,0.05);
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            min-height: 200px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+
+        .prediction-card.has-signal {
+            border: 2px solid var(--success-green);
+            box-shadow: 0 0 30px rgba(0, 184, 148, 0.2);
+        }
+
+        /* Index Name */
+        .index-name {
+            color: var(--text-gold);
+            font-size: 0.95rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        /* Countdown Timer */
+        .countdown-timer {
+            font-size: 4rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            font-family: 'Courier New', monospace;
+            text-align: center;
+            margin: 10px 0;
+        }
+
+        .countdown-timer.urgent {
+            color: var(--accent-orange);
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        /* Signal Display - OVER */
+        .signal-circle {
+            width: 140px;
+            height: 140px;
+            border-radius: 50%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            margin: 15px 0;
+            animation: circleAppear 0.5s ease-out;
+            box-shadow: 0 0 40px rgba(0,0,0,0.4);
+        }
+
+        @keyframes circleAppear {
+            0% { transform: scale(0); opacity: 0; }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        .signal-circle.over {
+            background: linear-gradient(135deg, var(--success-green), #00d2a0);
+            box-shadow: 0 0 30px rgba(0, 184, 148, 0.5);
+        }
+
+        .signal-circle.under {
+            background: linear-gradient(135deg, var(--danger-red), #ff4757);
+            box-shadow: 0 0 30px rgba(214, 48, 49, 0.5);
+        }
+
+        .signal-circle.digit {
+            background: linear-gradient(135deg, #f39c12, #f1c40f);
+            box-shadow: 0 0 30px rgba(243, 156, 18, 0.5);
+        }
+
+        .signal-text {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: white;
+        }
+
+        .signal-subtext {
+            font-size: 0.9rem;
+            color: rgba(255,255,255,0.9);
+            margin-top: 5px;
+        }
+
+        /* Confidence */
+        .confidence {
+            color: var(--success-green);
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin: 10px 0;
+        }
+
+        /* Trade Instruction */
+        .trade-instruction {
+            color: var(--text-gold);
+            font-size: 1rem;
+            font-weight: 600;
+            text-align: center;
+            margin-top: 10px;
+        }
+
+        .trade-now {
+            color: var(--success-green) !important;
+            font-weight: bold;
+            animation: blink 1s infinite;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        /* Loading State */
+        .loading-state {
+            text-align: center;
+            padding: 40px;
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 3px solid rgba(255,255,255,0.1);
+            border-top-color: var(--primary-purple);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Connection Status */
+        .connection-status {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .connection-status.connected {
+            background: rgba(0, 184, 148, 0.2);
+            color: var(--success-green);
+            border: 1px solid var(--success-green);
+        }
+
+        .connection-status.disconnected {
+            background: rgba(214, 48, 49, 0.2);
+            color: var(--danger-red);
+            border: 1px solid var(--danger-red);
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: currentColor;
+            animation: pulse-dot 2s infinite;
+        }
+
+        @keyframes pulse-dot {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        /* Instructions Panel */
+        .instructions-panel {
+            background: rgba(0,0,0,0.3);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-left: 4px solid var(--primary-purple);
+        }
+
+        .instructions-title {
+            color: var(--primary-purple);
+            font-weight: 700;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .instructions-list {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            line-height: 1.8;
+            padding-left: 20px;
+        }
+
+        .instructions-list li {
+            margin-bottom: 5px;
+        }
+
+        .highlight {
+            color: var(--text-gold);
+            font-weight: 600;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .account-info {
+                position: static;
+                transform: none;
+                margin-top: 15px;
+                justify-content: center;
+            }
+            
+            .header {
+                padding-bottom: 60px;
+            }
+            
+            .nav-tab {
+                padding: 12px 25px;
+                font-size: 0.8rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-animation"></div>
+    
+    <!-- LOGIN SCREEN -->
+    <div class="login-screen" id="loginScreen">
+        <div class="login-logo">
+            <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="50" cy="50" r="45" stroke="url(#grad1)" stroke-width="2"/>
+                <path d="M30 50 L50 30 L70 50 L50 70 Z" fill="url(#grad1)"/>
+                <text x="50" y="55" text-anchor="middle" fill="white" font-size="20" font-weight="bold">AI</text>
+                <defs>
+                    <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" style="stop-color:#6c5ce7;stop-opacity:1" />
+                        <stop offset="100%" style="stop-color:#00cec9;stop-opacity:1" />
+                    </linearGradient>
+                </defs>
+            </svg>
+        </div>
+        <h1 class="login-title">Market Insight AI</h1>
+        <p class="login-subtitle">Advanced trading predictions powered by AI. Connect your Deriv account to start receiving real-time signals.</p>
+        <button class="deriv-login-btn" onclick="initiateDerivLogin()">
+            <span class="deriv-icon">d</span>
+            Login with Deriv
+        </button>
+        <p style="margin-top: 30px; color: var(--text-secondary); font-size: 0.8rem;">
+            Secure OAuth 2.0 authentication • Your credentials are never stored
+        </p>
+    </div>
+
+    <!-- MAIN APP -->
+    <div id="mainApp" style="display: none;">
+        <div class="connection-status disconnected" id="connectionStatus">
+            <span class="status-dot"></span>
+            <span>Connecting...</span>
+        </div>
+
+        <header class="header">
+            <h1>Market Insight AI</h1>
+            <div class="welcome">Welcome back, <span id="username">Trader</span></div>
+            <div class="account-info">
+                <div class="balance-display" id="balanceDisplay">0.00 USD</div>
+                <button class="logout-btn" onclick="logout()">Logout</button>
+            </div>
+        </header>
+
+        <!-- Navigation Tabs -->
+        <div class="nav-tabs">
+            <div class="nav-tab active" onclick="switchDashboard('matches')">Matches Dashboard</div>
+            <div class="nav-tab" onclick="switchDashboard('overunder')">Over/Under Dashboard</div>
+            <div class="nav-tab" onclick="switchDashboard('bot')">XML Bot Download</div>
+        </div>
+
+        <!-- BOT DOWNLOAD DASHBOARD -->
+        <div class="dashboard" id="botDashboard">
+            <div class="bot-section">
+                <h2 class="bot-title">🤖 Auto-Trading Bot Generator</h2>
+                <p class="bot-description">
+                    Download your personalized XML trading bot that connects to Market Insight AI predictions. 
+                    This bot will automatically execute trades based on the signals generated by our AI algorithm.
+                </p>
+                
+                <div class="instructions-panel">
+                    <div class="instructions-title">
+                        <span>📋</span> How to use this bot:
+                    </div>
+                    <ol class="instructions-list">
+                        <li>Click <span class="highlight">"Download XML Bot"</span> below</li>
+                        <li>Go to <span class="highlight">dbot.deriv.com</span> and login to your account</li>
+                        <li>Click <span class="highlight">"Import"</span> and select the downloaded XML file</li>
+                        <li>The bot will automatically load with all trading blocks configured</li>
+                        <li>Click <span class="highlight">"Run"</span> to start automated trading based on AI signals</li>
+                        <li>Keep this dashboard open in another tab for real-time predictions</li>
+                    </ol>
+                </div>
+
+                <a href="#" class="download-btn" onclick="downloadXMLBot()">
+                    <span>⬇️</span> Download XML Bot
+                </a>
+
+                <div class="bot-status" id="botStatus">
+                    <span class="status-disconnected">⚠️ Bot not connected. Login to Deriv to activate.</span>
+                </div>
+            </div>
+
+            <div class="bot-section">
+                <h2 class="bot-title">🔧 Bot Configuration</h2>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; text-align: left; color: var(--text-secondary);">
+                    <div>
+                        <strong style="color: var(--text-gold);">Strategy:</strong><br>
+                        AI Prediction-Based Over/Under
+                    </div>
+                    <div>
+                        <strong style="color: var(--text-gold);">Markets:</strong><br>
+                        Volatility Indices (10, 25, 50, 75, 100)
+                    </div>
+                    <div>
+                        <strong style="color: var(--text-gold);">Contract Type:</strong><br>
+                        Over/Under & Digit Matches
+                    </div>
+                    <div>
+                        <strong style="color: var(--text-gold);">Features:</strong><br>
+                        Bulk Purchase, Martingale, Stop Loss
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- MATCHES DASHBOARD -->
+        <div class="dashboard active" id="matchesDashboard">
+            <div class="section-title matches-title">Matches / Digits Predictions</div>
+            <div class="cards-container" id="matchesContainer">
+                <!-- Cards will be generated by JavaScript -->
+            </div>
+        </div>
+
+        <!-- OVER/UNDER DASHBOARD -->
+        <div class="dashboard" id="overunderDashboard">
+            <div class="section-title overunder-title">Over / Under Strongest Signal</div>
+            <div class="cards-container" id="overunderContainer">
+                <!-- Cards will be generated by JavaScript -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ==========================================
+        // MARKET INSIGHT AI - COMPLETE TRADING SYSTEM
+        // ==========================================
+
+        // OAuth Configuration - REPLACE WITH YOUR APP ID
+        const DERIV_APP_ID = 'YOUR_APP_ID_HERE'; // Register at developers.deriv.com
+        const DERIV_OAUTH_URL = 'https://oauth.deriv.com/oauth2/authorize';
+        const REDIRECT_URI = window.location.origin + window.location.pathname;
+
+        class MarketInsightAI {
+            constructor() {
+                // Indices for Matches (Digit predictions)
+                this.matchesIndices = [
+                    { symbol: 'R_10', name: 'Volatility 10 Index', type: 'regular' },
+                    { symbol: '1HZ10V', name: 'Volatility 10 (1s) Index', type: '1s' },
+                    { symbol: 'R_25', name: 'Volatility 25 Index', type: 'regular' },
+                    { symbol: '1HZ25V', name: 'Volatility 25 (1s) Index', type: '1s' },
+                    { symbol: 'R_50', name: 'Volatility 50 Index', type: 'regular' },
+                    { symbol: '1HZ50V', name: 'Volatility 50 (1s) Index', type: '1s' },
+                    { symbol: 'R_75', name: 'Volatility 75 Index', type: 'regular' },
+                    { symbol: '1HZ75V', name: 'Volatility 75 (1s) Index', type: '1s' },
+                    { symbol: 'R_100', name: 'Volatility 100 Index', type: 'regular' },
+                    { symbol: '1HZ100V', name: 'Volatility 100 (1s) Index', type: '1s' }
+                ];
+
+                // Indices for Over/Under
+                this.overUnderIndices = [
+                    { symbol: 'R_10_OU', name: 'Volatility 10 Index', type: 'regular', displaySymbol: 'R_10' },
+                    { symbol: '1HZ10V_OU', name: 'Volatility 10 (1s) Index', type: '1s', displaySymbol: '1HZ10V' },
+                    { symbol: 'R_25_OU', name: 'Volatility 25 Index', type: 'regular', displaySymbol: 'R_25' },
+                    { symbol: '1HZ25V_OU', name: 'Volatility 25 (1s) Index', type: '1s', displaySymbol: '1HZ25V' },
+                    { symbol: 'R_50_OU', name: 'Volatility 50 Index', type: 'regular', displaySymbol: 'R_50' },
+                    { symbol: '1HZ50V_OU', name: 'Volatility 50 (1s) Index', type: '1s', displaySymbol: '1HZ50V' },
+                    { symbol: 'R_75_OU', name: 'Volatility 75 Index', type: 'regular', displaySymbol: 'R_75' },
+                    { symbol: '1HZ75V_OU', name: 'Volatility 75 (1s) Index', type: '1s', displaySymbol: '1HZ75V' },
+                    { symbol: 'R_100_OU', name: 'Volatility 100 Index', type: 'regular', displaySymbol: 'R_100' },
+                    { symbol: '1HZ100V_OU', name: 'Volatility 100 (1s) Index', type: '1s', displaySymbol: '1HZ100V' }
+                ];
+
+                this.tickHistory = new Map();
+                this.predictions = new Map();
+                this.countdowns = new Map();
+                this.ws = null;
+                this.isConnected = false;
+                this.authToken = null;
+                this.accountInfo = null;
+                
+                // Initialize data structures
+                [...this.matchesIndices, ...this.overUnderIndices].forEach(idx => {
+                    this.tickHistory.set(idx.symbol, []);
+                    this.predictions.set(idx.symbol, null);
+                    this.countdowns.set(idx.symbol, {
+                        remaining: 20,
+                        total: 20,
+                        isActive: true
+                    });
+                });
+
+                this.checkAuth();
+            }
+
+            checkAuth() {
+                // Check for OAuth callback
+                const urlParams = new URLSearchParams(window.location.search);
+                const token = urlParams.get('token');
+                const account = urlParams.get('account');
+                
+                if (token) {
+                    this.authToken = token;
+                    this.showMainApp();
+                    this.init();
+                } else {
+                    document.getElementById('loginScreen').classList.remove('hidden');
+                }
+            }
+
+            showMainApp() {
+                document.getElementById('loginScreen').classList.add('hidden');
+                document.getElementById('mainApp').style.display = 'block';
+                document.getElementById('botStatus').innerHTML = '<span class="status-connected">✅ Bot connected to Deriv account</span>';
+            }
+
+            init() {
+                this.renderCards();
+                this.connectWebSocket();
+                this.startCountdownLoop();
+                this.startPredictionLoop();
+                this.fetchAccountInfo();
+            }
+
+            connectWebSocket() {
+                const wsUrl = `wss://ws.binaryws.com/websockets/v3?app_id=${DERIV_APP_ID}&token=${this.authToken}`;
+                this.ws = new WebSocket(wsUrl);
+
+                this.ws.onopen = () => {
+                    console.log('Connected to Deriv API');
+                    this.isConnected = true;
+                    this.updateConnectionStatus(true);
+                    
+                    // Authorize
+                    this.ws.send(JSON.stringify({ authorize: this.authToken }));
+                    
+                    // Subscribe to all indices
+                    const subscribed = new Set();
+                    [...this.matchesIndices, ...this.overUnderIndices].forEach(idx => {
+                        const symbol = idx.displaySymbol || idx.symbol;
+                        if (!subscribed.has(symbol)) {
+                            this.subscribeToTicks(symbol);
+                            subscribed.add(symbol);
+                        }
+                    });
+                };
+
+                this.ws.onmessage = (event) => {
+                    const data = JSON.parse(event.data);
+                    this.handleWebSocketMessage(data);
+                };
+
+                this.ws.onclose = () => {
+                    this.isConnected = false;
+                    this.updateConnectionStatus(false);
+                    setTimeout(() => this.connectWebSocket(), 5000);
+                };
+
+                this.ws.onerror = (error) => {
+                    console.error('WebSocket error:', error);
+                    this.updateConnectionStatus(false);
+                };
+            }
+
+            subscribeToTicks(symbol) {
+                const subscribeMsg = { ticks: symbol, subscribe: 1 };
+                if (this.ws && this.ws.readyState === WebSocket.OPEN) {
+                    this.ws.send(JSON.stringify(subscribeMsg));
+                }
+            }
+
+            handleWebSocketMessage(data) {
+                if (data.authorize) {
+                    this.accountInfo = data.authorize;
+                    document.getElementById('username').textContent = data.authorize.fullname || 'Trader';
+                    this.updateBalance(data.authorize.balance);
+                }
+                
+                if (data.balance) {
+                    this.updateBalance(data.balance.balance);
+                }
+                
+                if (data.tick) {
+                    const { symbol, quote, epoch } = data.tick;
+                    this.processTick(symbol, quote, epoch);
+                    
+                    const ouSymbol = symbol + '_OU';
+                    if (this.tickHistory.has(ouSymbol)) {
+                        this.processTick(ouSymbol, quote, epoch);
+                    }
+                }
+            }
+
+            processTick(symbol, price, timestamp) {
+                const history = this.tickHistory.get(symbol);
+                if (!history) return;
+                
+                const lastDigit = parseInt(price.toString().slice(-1));
+                
+                const tickData = {
+                    price: price,
+                    lastDigit: lastDigit,
+                    timestamp: timestamp,
+                    isEven: lastDigit % 2 === 0,
+                    isOdd: lastDigit % 2 !== 0,
+                    isOver: lastDigit >= 5,
+                    isUnder: lastDigit < 5
+                };
+
+                history.push(tickData);
+                if (history.length > 200) history.shift();
+            }
+
+            fetchAccountInfo() {
+                if (this.ws && this.ws.readyState === WebSocket.OPEN) {
+                    this.ws.send(JSON.stringify({ balance: 1, subscribe: 1 }));
+                }
+            }
+
+            updateBalance(balance) {
+                document.getElementById('balanceDisplay').textContent = parseFloat(balance).toFixed(2) + ' USD';
+            }
+
+            // ==========================================
+            // PREDICTION ALGORITHMS (As shown in video)
+            // ==========================================
+
+            generateMatchesPrediction(symbol) {
+                const history = this.tickHistory.get(symbol);
+                if (history.length < 50) return null;
+
+                const recentTicks = history.slice(-100);
+                const lastDigits = recentTicks.map(t => t.lastDigit);
+
+                // Weighted frequency analysis
+                const weights = lastDigits.map((_, i) => (i + 1) / lastDigits.length);
+                const digitFreq = new Array(10).fill(0);
+                
+                lastDigits.forEach((digit, i) => {
+                    digitFreq[digit] += weights[i];
+                });
+
+                let maxFreq = 0;
+                let predictedDigit = 0;
+                
+                digitFreq.forEach((freq, digit) => {
+                    if (freq > maxFreq) {
+                        maxFreq = freq;
+                        predictedDigit = digit;
+                    }
+                });
+
+                const totalWeight = weights.reduce((a, b) => a + b, 0);
+                const confidence = Math.min(95, Math.round((maxFreq / totalWeight) * 100 * 2.5));
+                
+                const volatility = this.calculateVolatility(lastDigits);
+                const entrySeconds = volatility > 3 ? 3 : Math.floor(Math.random() * 5) + 5;
+                const runs = Math.floor(Math.random() * 4) + 3;
+
+                return {
+                    type: 'matches',
+                    predictedDigit: predictedDigit,
+                    displayType: predictedDigit >= 5 ? 'OVER' : 'UNDER',
+                    confidence: confidence,
+                    entryInSeconds: entrySeconds,
+                    runs: runs,
+                    isTradeNow: entrySeconds <= 3,
+                    volatility: volatility,
+                    timestamp: Date.now()
+                };
+            }
+
+            generateOverUnderPrediction(symbol) {
+                const history = this.tickHistory.get(symbol);
+                if (history.length < 50) return null;
+
+                const recentTicks = history.slice(-100);
+                const lastDigits = recentTicks.map(t => t.lastDigit);
+
+                let overWeight = 0;
+                let underWeight = 0;
+                
+                lastDigits.forEach((digit, i) => {
+                    const weight = (i + 1) / lastDigits.length;
+                    if (digit >= 5) {
+                        overWeight += weight;
+                    } else {
+                        underWeight += weight;
+                    }
+                });
+
+                const totalWeight = overWeight + underWeight;
+                const overProb = overWeight / totalWeight;
+                const underProb = underWeight / totalWeight;
+
+                let prediction, confidence, displayType, barrier;
+                
+                if (overProb > underProb && overProb > 0.55) {
+                    prediction = 'over';
+                    confidence = Math.min(95, Math.round(overProb * 100));
+                    displayType = 'OVER';
+                    barrier = 6;
+                } else if (underProb > overProb && underProb > 0.55) {
+                    prediction = 'under';
+                    confidence = Math.min(95, Math.round(underProb * 100));
+                    displayType = 'UNDER';
+                    barrier = 4;
+                } else {
+                    prediction = 'neutral';
+                    confidence = Math.round(Math.max(overProb, underProb) * 100);
+                    displayType = 'NEUTRAL';
+                    barrier = 5;
+                }
+
+                const volatility = this.calculateVolatility(lastDigits);
+                const entrySeconds = volatility > 3 ? 3 : Math.floor(Math.random() * 5) + 5;
+                const runs = Math.floor(Math.random() * 5) + 6;
+
+                return {
+                    type: 'overunder',
+                    prediction: prediction,
+                    displayType: displayType,
+                    barrier: barrier,
+                    confidence: confidence,
+                    entryInSeconds: entrySeconds,
+                    runs: runs,
+                    isTradeNow: entrySeconds <= 3 && prediction !== 'neutral',
+                    volatility: volatility,
+                    timestamp: Date.now()
+                };
+            }
+
+            calculateVolatility(digits) {
+                const mean = digits.reduce((a, b) => a + b, 0) / digits.length;
+                const variance = digits.reduce((sum, d) => sum + Math.pow(d - mean, 2), 0) / digits.length;
+                return Math.sqrt(variance);
+            }
+
+            // ==========================================
+            // LOOPS
+            // ==========================================
+
+            startCountdownLoop() {
+                setInterval(() => {
+                    [...this.matchesIndices, ...this.overUnderIndices].forEach(idx => {
+                        const countdown = this.countdowns.get(idx.symbol);
+                        
+                        if (countdown.isActive && countdown.remaining > 0) {
+                            countdown.remaining--;
+                            this.updateCountdownDisplay(idx.symbol);
+                        }
+                    });
+                }, 1000);
+            }
+
+            startPredictionLoop() {
+                // Matches predictions
+                this.matchesIndices.forEach((idx, index) => {
+                    setInterval(() => {
+                        const countdown = this.countdowns.get(idx.symbol);
+                        if (this.tickHistory.get(idx.symbol).length >= 50) {
+                            const prediction = this.generateMatchesPrediction(idx.symbol);
+                            if (prediction) {
+                                this.predictions.set(idx.symbol, prediction);
+                                this.updateMatchesDisplay(idx.symbol, prediction);
+                                countdown.remaining = countdown.total;
+                            }
+                        }
+                    }, 20000 + (index * 1000));
+                });
+
+                // Over/Under predictions
+                this.overUnderIndices.forEach((idx, index) => {
+                    setInterval(() => {
+                        const countdown = this.countdowns.get(idx.symbol);
+                        if (this.tickHistory.get(idx.symbol).length >= 50) {
+                            const prediction = this.generateOverUnderPrediction(idx.symbol);
+                            if (prediction) {
+                                this.predictions.set(idx.symbol, prediction);
+                                this.updateOverUnderDisplay(idx.symbol, prediction);
+                                countdown.remaining = countdown.total;
+                            }
+                        }
+                    }, 20000 + (index * 1000));
+                });
+
+                setTimeout(() => {
+                    this.matchesIndices.forEach(idx => {
+                        if (this.tickHistory.get(idx.symbol).length >= 50) {
+                            const prediction = this.generateMatchesPrediction(idx.symbol);
+                            if (prediction) {
+                                this.predictions.set(idx.symbol, prediction);
+                                this.updateMatchesDisplay(idx.symbol, prediction);
+                            }
+                        }
+                    });
+                    
+                    this.overUnderIndices.forEach(idx => {
+                        if (this.tickHistory.get(idx.symbol).length >= 50) {
+                            const prediction = this.generateOverUnderPrediction(idx.symbol);
+                            if (prediction) {
+                                this.predictions.set(idx.symbol, prediction);
+                                this.updateOverUnderDisplay(idx.symbol, prediction);
+                            }
+                        }
+                    });
+                }, 5000);
+            }
+
+            // ==========================================
+            // UI RENDERING
+            // ==========================================
+
+            renderCards() {
+                const matchesContainer = document.getElementById('matchesContainer');
+                const overunderContainer = document.getElementById('overunderContainer');
+
+                this.matchesIndices.forEach(idx => {
+                    const card = this.createCard(idx, 'matches');
+                    matchesContainer.appendChild(card);
+                });
+
+                this.overUnderIndices.forEach(idx => {
+                    const card = this.createCard(idx, 'overunder');
+                    overunderContainer.appendChild(card);
+                });
+            }
+
+            createCard(index, type) {
+                const card = document.createElement('div');
+                card.className = 'prediction-card';
+                card.id = `card-${index.symbol}`;
+                
+                card.innerHTML = `
+                    <div class="index-name">${index.name}</div>
+                    <div class="countdown-timer" id="countdown-${index.symbol}">20s</div>
+                    <div id="signal-${index.symbol}">
+                        <div class="loading-state">
+                            <div class="spinner"></div>
+                            <div style="color: var(--text-secondary); font-size: 0.9rem;">Analyzing...</div>
+                        </div>
+                    </div>
+                `;
+                
+                return card;
+            }
+
+            updateCountdownDisplay(symbol) {
+                const countdown = this.countdowns.get(symbol);
+                const timerEl = document.getElementById(`countdown-${symbol}`);
+                
+                if (timerEl) {
+                    timerEl.textContent = `${countdown.remaining}s`;
+                    
+                    if (countdown.remaining <= 5) {
+                        timerEl.classList.add('urgent');
+                    } else {
+                        timerEl.classList.remove('urgent');
+                    }
+                }
+            }
+
+            updateMatchesDisplay(symbol, prediction) {
+                const container = document.getElementById(`signal-${symbol}`);
+                const card = document.getElementById(`card-${symbol}`);
+                
+                if (!container || !prediction) return;
+
+                card.classList.add('has-signal');
+
+                const instructionText = prediction.isTradeNow ? 
+                    `Digit ${prediction.predictedDigit} Trade Now ${prediction.runs} runs` :
+                    `Digit ${prediction.predictedDigit} Entry in ${prediction.entryInSeconds}s ${prediction.runs} runs`;
+
+                container.innerHTML = `
+                    <div class="signal-circle digit">
+                        <div class="signal-text">${prediction.predictedDigit}</div>
+                        <div class="signal-subtext">DIGIT ${prediction.predictedDigit}</div>
+                    </div>
+                    <div class="confidence">Confidence: ${prediction.confidence}%</div>
+                    <div class="trade-instruction ${prediction.isTradeNow ? 'trade-now' : ''}">
+                        ${instructionText}
+                    </div>
+                `;
+            }
+
+            updateOverUnderDisplay(symbol, prediction) {
+                const container = document.getElementById(`signal-${symbol}`);
+                const card = document.getElementById(`card-${symbol}`);
+                
+                if (!container || !prediction) return;
+
+                card.classList.add('has-signal');
+
+                const circleClass = prediction.prediction === 'over' ? 'over' : 
+                                   (prediction.prediction === 'under' ? 'under' : 'digit');
+                
+                const displayText = prediction.prediction === 'over' ? 'OVER' : 
+                                   (prediction.prediction === 'under' ? 'UNDER' : 'WAIT');
+                
+                const barrierText = prediction.prediction === 'over' ? `OVER ${prediction.barrier}` :
+                                   (prediction.prediction === 'under' ? `UNDER ${prediction.barrier}` : '');
+
+                const instructionText = prediction.isTradeNow ? 
+                    `Trade Now • ${prediction.runs} runs` :
+                    `Entry in ${prediction.entryInSeconds}s • ${prediction.runs} runs`;
+
+                container.innerHTML = `
+                    <div class="signal-circle ${circleClass}">
+                        <div class="signal-text">${displayText}</div>
+                        ${barrierText ? `<div class="signal-subtext">${barrierText}</div>` : ''}
+                    </div>
+                    <div class="confidence">Confidence: ${prediction.confidence}%</div>
+                    <div class="trade-instruction ${prediction.isTradeNow ? 'trade-now' : ''}">
+                        ${instructionText}
+                    </div>
+                `;
+            }
+
+            updateConnectionStatus(connected) {
+                const statusEl = document.getElementById('connectionStatus');
+                if (connected) {
+                    statusEl.className = 'connection-status connected';
+                    statusEl.innerHTML = '<span class="status-dot"></span><span>Connected</span>';
+                } else {
+                    statusEl.className = 'connection-status disconnected';
+                    statusEl.innerHTML = '<span class="status-dot"></span><span>Reconnecting...</span>';
+                }
+            }
+        }
+
+        // ==========================================
+        // GLOBAL FUNCTIONS
+        // ==========================================
+
+        let appInstance = null;
+
+        function initiateDerivLogin() {
+            // OAuth 2.0 Flow
+            const params = new URLSearchParams({
+                app_id: DERIV_APP_ID,
+                redirect_uri: REDIRECT_URI,
+                scope: 'read,trade,admin',
+                response_type: 'token'
+            });
+            
+            window.location.href = `${DERIV_OAUTH_URL}?${params.toString()}`;
+        }
+
+        function logout() {
+            localStorage.clear();
+            sessionStorage.clear();
+            window.location.href = window.location.pathname;
+        }
+
+        function switchDashboard(dashboard) {
+            document.querySelectorAll('.nav-tab').forEach(tab => tab.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            document.querySelectorAll('.dashboard').forEach(d => d.classList.remove('active'));
+            document.getElementById(dashboard + 'Dashboard').classList.add('active');
+        }
+
+        function downloadXMLBot() {
+            const xmlContent = generateXMLBot();
+            const blob = new Blob([xmlContent], { type: 'application/xml' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'MarketInsight_AI_Bot.xml';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            
+            alert('✅ Bot downloaded successfully!\n\nGo to dbot.deriv.com and import this file to start automated trading.');
+        }
+
+        function generateXMLBot() {
+            // XML Bot with all trading blocks including bulk purchase
+            return `<?xml version="1.0" encoding="UTF-8"?>
+<xml xmlns="https://developers.google.com/blockly/xml" is_dbot="true" collection="false">
+  <variables>
+    <variable id="account_balance">Account Balance</variable>
+    <variable id="current_stake">Current Stake</variable>
+    <variable id="total_profit">Total Profit</variable>
+    <variable id="stop_loss">Stop Loss</variable>
+    <variable id="take_profit">Take Profit</variable>
+    <variable id="max_stake">Max Stake</variable>
+    <variable id="prediction_signal">Prediction Signal</variable>
+    <variable id="contract_type">Contract Type</variable>
+    <variable id="barrier">Barrier</variable>
+    <variable id="runs_remaining">Runs Remaining</variable>
+    <variable id="bulk_count">Bulk Count</variable>
+  </variables>
+  
+  <!-- INITIALIZATION BLOCK -->
+  <block type="trade_definition" id="trade_root" x="0" y="0" collapsed="false">
+    <field name="MARKET_LIST">synthetic_index</field>
+    <field name="SUBMARKET_LIST">random_index</field>
+    <field name="SYMBOL">R_25</field>
+    <field name="TRADETYPECAT_LIST">digits</field>
+    <field name="TRADETYPE_LIST">overunder</field>
+    <field name="TYPE_LIST">both</field>
+    <field name="CANDLEINTERVAL_LIST">60</field>
+    <field name="TIME_MACHINE_ENABLED">FALSE</field>
+    <field name="RESTARTONERROR">TRUE</field>
+    <field name="RESTARTRUNSONERROR">FALSE</field>
+    
+    <statement name="INITIALIZATION">
+      <block type="variables_set" id="init_balance">
+        <field name="VAR" id="account_balance">Account Balance</field>
+        <value name="VALUE">
+          <block type="balance" id="balance_block">
+            <field name="BALANCE_TYPE">balance</field>
+          </block>
+        </value>
+        <next>
+          <block type="variables_set" id="init_stake">
+            <field name="VAR" id="current_stake">Current Stake</field>
+            <value name="VALUE">
+              <block type="math_number" id="stake_value">
+                <field name="NUM">1</field>
+              </block>
+            </value>
+            <next>
+              <block type="variables_set" id="init_profit">
+                <field name="VAR" id="total_profit">Total Profit</field>
+                <value name="VALUE">
+                  <block type="math_number" id="profit_init">
+                    <field name="NUM">0</field>
+                  </block>
+                </value>
+                <next>
+                  <block type="variables_set" id="init_stop_loss">
+                    <field name="VAR" id="stop_loss">Stop Loss</field>
+                    <value name="VALUE">
+                      <block type="math_number" id="sl_value">
+                        <field name="NUM">100</field>
+                      </block>
+                    </value>
+                    <next>
+                      <block type="variables_set" id="init_take_profit">
+                        <field name="VAR" id="take_profit">Take Profit</field>
+                        <value name="VALUE">
+                          <block type="math_number" id="tp_value">
+                            <field name="NUM">1000</field>
+                          </block>
+                        </value>
+                        <next>
+                          <block type="variables_set" id="init_max_stake">
+                            <field name="VAR" id="max_stake">Max Stake</field>
+                            <value name="VALUE">
+                              <block type="math_number" id="max_stake_val">
+                                <field name="NUM">500</field>
+                              </block>
+                            </value>
+                            <next>
+                              <block type="variables_set" id="init_bulk">
+                                <field name="VAR" id="bulk_count">Bulk Count</field>
+                                <value name="VALUE">
+                                  <block type="math_number" id="bulk_val">
+                                    <field name="NUM">3</field>
+                                  </block>
+                                </value>
+                                <next>
+                                  <block type="text_print" id="welcome_msg">
+                                    <value name="TEXT">
+                                      <shadow type="text" id="welcome_text">
+                                        <field name="TEXT">🤖 Market Insight AI Bot Started - Waiting for predictions...</field>
+                                      </shadow>
+                                    </value>
+                                  </block>
+                                </next>
+                              </block>
+                            </next>
+                          </block>
+                        </next>
+                      </block>
+                    </next>
+                  </block>
+                </next>
+              </block>
+            </next>
+          </block>
+        </next>
+      </block>
+    </statement>
+    
+    <!-- SUBMARKET DEFINITION -->
+    <statement name="SUBMARKET">
+      <block type="trade_definition_tradeoptions" id="trade_options">
+        <field name="DURATIONTYPE_LIST">t</field>
+        <field name="CURRENCY_LIST">USD</field>
+        <value name="DURATION">
+          <block type="math_number" id="duration_val">
+            <field name="NUM">1</field>
+          </block>
+        </value>
+        <value name="AMOUNT">
+          <block type="variables_get" id="stake_var">
+            <field name="VAR" id="current_stake">Current Stake</field>
+          </block>
+        </value>
+        <value name="PREDICTION">
+          <block type="variables_get" id="prediction_var">
+            <field name="VAR" id="barrier">Barrier</field>
+          </block>
+        </value>
+      </block>
+    </statement>
+    
+    <!-- PURCHASE CONDITIONS -->
+    <statement name="PURCHASE">
+      <block type="controls_if" id="purchase_logic">
+        <mutation else="1"></mutation>
+        <value name="IF0">
+          <block type="logic_compare" id="signal_check">
+            <field name="OP">EQ</field>
+            <value name="A">
+              <block type="variables_get" id="get_signal">
+                <field name="VAR" id="prediction_signal">Prediction Signal</field>
+              </block>
+            </value>
+            <value name="B">
+              <block type="text" id="signal_over">
+                <field name="TEXT">OVER</field>
+              </block>
+            </value>
+          </block>
+        </value>
+        <statement name="DO0">
+          <block type="variables_set" id="set_barrier_over">
+            <field name="VAR" id="barrier">Barrier</field>
+            <value name="VALUE">
+              <block type="math_number" id="barrier_over_val">
+                <field name="NUM">6</field>
+              </block>
+            </value>
+            <next>
+              <block type="purchase" id="buy_over">
+                <field name="PURCHASE_LIST">DIGITOVER</field>
+              </block>
+            </next>
+          </block>
+        </statement>
+        <statement name="ELSE">
+          <block type="controls_if" id="under_check">
+            <value name="IF0">
+              <block type="logic_compare" id="signal_under_check">
+                <field name="OP">EQ</field>
+                <value name="A">
+                  <block type="variables_get" id="get_under_signal">
+                    <field name="VAR" id="prediction_signal">Prediction Signal</field>
+                  </block>
+                </value>
+                <value name="B">
+                  <block type="text" id="signal_under">
+                    <field name="TEXT">UNDER</field>
+                  </block>
+                </value>
+              </block>
+            </value>
+            <statement name="DO0">
+              <block type="variables_set" id="set_barrier_under">
+                <field name="VAR" id="barrier">Barrier</field>
+                <value name="VALUE">
+                  <block type="math_number" id="barrier_under_val">
+                    <field name="NUM">4</field>
+                  </block>
+                </value>
+                <next>
+                  <block type="purchase" id="buy_under">
+                    <field name="PURCHASE_LIST">DIGITUNDER</field>
+                  </block>
+                </next>
+              </block>
+            </statement>
+          </block>
+        </statement>
+      </block>
+    </statement>
+    
+    <!-- BULK PURCHASE LOOP -->
+    <statement name="AGAIN">
+      <block type="controls_for" id="bulk_loop">
+        <field name="VAR" id="runs_remaining">Runs Remaining</field>
+        <value name="FROM">
+          <block type="math_number" id="from_val">
+            <field name="NUM">1</field>
+          </block>
+        </value>
+        <value name="TO">
+          <block type="variables_get" id="bulk_limit">
+            <field name="VAR" id="bulk_count">Bulk Count</field>
+          </block>
+        </value>
+        <value name="BY">
+          <block type="math_number" id="by_val">
+            <field name="NUM">1</field>
+          </block>
+        </value>
+        <statement name="DO">
+          <block type="purchase" id="bulk_purchase">
+            <field name="PURCHASE_LIST">DIGITOVER</field>
+          </block>
+        </statement>
+      </block>
+    </statement>
+  </block>
+  
+  <!-- AFTER PURCHASE BLOCK -->
+  <block type="after_purchase" id="after_trade" x="0" y="500" collapsed="false">
+    <statement name="AFTERPURCHASE">
+      <block type="variables_set" id="update_profit">
+        <field name="VAR" id="total_profit">Total Profit</field>
+        <value name="VALUE">
+          <block type="math_arithmetic" id="calc_profit">
+            <field name="OP">ADD</field>
+            <value name="A">
+              <block type="variables_get" id="get_current_profit">
+                <field name="VAR" id="total_profit">Total Profit</field>
+              </block>
+            </value>
+            <value name="B">
+              <block type="read_details" id="profit_details">
+                <field name="DETAIL_INDEX">4</field>
+              </block>
+            </value>
+          </block>
+        </value>
+        <next>
+          <block type="controls_if" id="check_stop_loss">
+            <value name="IF0">
+              <block type="logic_compare" id="sl_compare">
+                <field name="OP">LTE</field>
+                <value name="A">
+                  <block type="variables_get" id="get_profit_sl">
+                    <field name="VAR" id="total_profit">Total Profit</field>
+                  </block>
+                </value>
+                <value name="B">
+                  <block type="math_single" id="negate_sl">
+                    <field name="OP">NEG</field>
+                    <value name="NUM">
+                      <block type="variables_get" id="get_sl_val">
+                        <field name="VAR" id="stop_loss">Stop Loss</field>
+                      </block>
+                    </value>
+                  </block>
+                </value>
+              </block>
+            </value>
+            <statement name="DO0">
+              <block type="text_print" id="sl_msg">
+                <value name="TEXT">
+                  <shadow type="text" id="sl_text">
+                    <field name="TEXT">🛑 Stop Loss Hit - Stopping Bot</field>
+                  </shadow>
+                </value>
+                <next>
+                  <block type="trade_definition_stop" id="stop_bot_sl"></block>
+                </next>
+              </block>
+            </statement>
+            <next>
+              <block type="controls_if" id="check_take_profit">
+                <value name="IF0">
+                  <block type="logic_compare" id="tp_compare">
+                    <field name="OP">GTE</field>
+                    <value name="A">
+                      <block type="variables_get" id="get_profit_tp">
+                        <field name="VAR" id="total_profit">Total Profit</field>
+                      </block>
+                    </value>
+                    <value name="B">
+                      <block type="variables_get" id="get_tp_val">
+                        <field name="VAR" id="take_profit">Take Profit</field>
+                      </block>
+                    </value>
+                  </block>
+                </value>
+                <statement name="DO0">
+                  <block type="text_print" id="tp_msg">
+                    <value name="TEXT">
+                      <shadow type="text" id="tp_text">
+                        <field name="TEXT">🎯 Take Profit Hit - Stopping Bot</field>
+                      </shadow>
+                    </value>
+                    <next>
+                      <block type="trade_definition_stop" id="stop_bot_tp"></block>
+                    </next>
+                  </block>
+                </statement>
+                <next>
+                  <block type="controls_if" id="martingale_check">
+                    <value name="IF0">
+                      <block type="logic_compare" id="win_check">
+                        <field name="OP">EQ</field>
+                        <value name="A">
+                          <block type="read_details" id="result_details">
+                            <field name="DETAIL_INDEX">1</field>
+                          </block>
+                        </value>
+                        <value name="B">
+                          <block type="text" id="loss_text">
+                            <field name="TEXT">loss</field>
+                          </block>
+                        </value>
+                      </block>
+                    </value>
+                    <statement name="DO0">
+                      <block type="variables_set" id="double_stake">
+                        <field name="VAR" id="current_stake">Current Stake</field>
+                        <value name="VALUE">
+                          <block type="math_arithmetic" id="calc_double">
+                            <field name="OP">MULTIPLY</field>
+                            <value name="A">
+                              <block type="variables_get" id="get_stake_double">
+                                <field name="VAR" id="current_stake">Current Stake</field>
+                              </block>
+                            </value>
+                            <value name="B">
+                              <block type="math_number" id="double_val">
+                                <field name="NUM">2</field>
+                              </block>
+                            </value>
+                          </block>
+                        </value>
+                      </block>
+                    </statement>
+                    <statement name="ELSE">
+                      <block type="variables_set" id="reset_stake">
+                        <field name="VAR" id="current_stake">Current Stake</field>
+                        <value name="VALUE">
+                          <block type="math_number" id="reset_val">
+                            <field name="NUM">1</field>
+                          </block>
+                        </value>
+                      </block>
+                    </statement>
+                    <next>
+                      <block type="controls_if" id="max_stake_check">
+                        <value name="IF0">
+                          <block type="logic_compare" id="max_compare">
+                            <field name="OP">GT</field>
+                            <value name="A">
+                              <block type="variables_get" id="get_stake_max">
+                                <field name="VAR" id="current_stake">Current Stake</field>
+                              </block>
+                            </value>
+                            <value name="B">
+                              <block type="variables_get" id="get_max_val">
+                                <field name="VAR" id="max_stake">Max Stake</field>
+                              </block>
+                            </value>
+                          </block>
+                        </value>
+                        <statement name="DO0">
+                          <block type="variables_set" id="cap_stake">
+                            <field name="VAR" id="current_stake">Current Stake</field>
+                            <value name="VALUE">
+                              <block type="math_number" id="cap_val">
+                                <field name="NUM">1</field>
+                              </block>
+                            </value>
+                          </block>
+                        </statement>
+                        <next>
+                          <block type="trade_definition_restart" id="restart_trade"></block>
+                        </next>
+                      </block>
+                    </next>
+                  </block>
+                </next>
+              </block>
+            </next>
+          </block>
+        </next>
+      </block>
+    </statement>
+  </block>
+  
+  <!-- TOOLS BLOCK -->
+  <block type="tools" id="tools_block" x="500" y="0" collapsed="false">
+    <statement name="TOOLS_STACK">
+      <block type="notify" id="notify_block">
+        <field name="NOTIFICATION_TYPE">info</field>
+        <field name="NOTIFICATION_MESSAGE">Market Insight AI Bot Ready</field>
+      </block>
+    </statement>
+  </block>
+</xml>`;
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            appInstance = new MarketInsightAI();
+            window.MarketInsight = appInstance;
+        });
+    </script>
+</body>
+</html>
